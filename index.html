@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Generator</title>
+    <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Barcode Generator</h1>
+        
+        <div class="format-info">
+            <h3>Format Information</h3>
+            <p id="formatDescription">Select a barcode format to see its description and supported characters.</p>
+        </div>
+        
+        <div class="input-group">
+            <label for="formatSelect">Barcode Format:</label>
+            <select id="formatSelect" onchange="updateInputPlaceholder()">
+                <option value="code128">Code 128 - Most versatile, supports all ASCII</option>
+                <option value="code39">Code 39 - Simple, alphanumeric + symbols</option>
+                <option value="ean13">EAN-13 - Product barcodes, 13 digits</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label for="textInput">Text to Encode:</label>
+            <input type="text" id="textInput" placeholder="Enter text here..." oninput="generateBarcode()">
+        </div>
+        
+        <div class="row">
+            <div class="input-group">
+                <label for="widthInput">Bar Width (px):</label>
+                <input type="number" id="widthInput" value="2" min="1" max="10" onchange="generateBarcode()">
+            </div>
+            <div class="input-group">
+                <label for="heightInput">Bar Height (px):</label>
+                <input type="number" id="heightInput" value="100" min="50" max="300" onchange="generateBarcode()">
+            </div>
+        </div>
+        
+        <button onclick="generateBarcode()">Generate Barcode</button>
+        
+        <div id="barcodeContainer">
+            <p>Enter text above to generate a barcode</p>
+        </div>
+    </div>
+
+    <script src="./src/main.js"></script>
+</body>
+</html>

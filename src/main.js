@@ -383,8 +383,77 @@ const CODE128 = {
             return canvas;
         }
 
+             function selectFormat(format) {
+            // Update the select dropdown
+            document.getElementById('formatSelect').value = format;
+            
+            // Update active preview card
+            document.querySelectorAll('.preview-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.target.closest('.preview-card').classList.add('active');
+            
+            // Update format info
+            updateFormatInfo(format);
+            
+            // Update settings visibility and placeholder
+            toggleSettings();
+            updateInputPlaceholder();
+            
+            // Regenerate code if there's text
+            const text = document.getElementById('textInput').value;
+            if (text) {
+                generateCode();
+            }
+        }
+
+        function updateFormatInfo(format) {
+            const title = document.getElementById('formatTitle');
+            const description = document.getElementById('formatDescription');
+            
+            switch(format) {
+                case 'code128':
+                    title.textContent = 'Code 128 - Universal Barcode';
+                    description.textContent = 'Code 128 supports all ASCII characters (0-127) including letters, numbers, and symbols. Most versatile barcode format for general use.';
+                    break;
+                case 'code39':
+                    title.textContent = 'Code 39 - Simple Alphanumeric';
+                    description.textContent = 'Code 39 supports uppercase letters (A-Z), numbers (0-9), and basic symbols like space, $, %, *, +, -, ., /, and :. Simple and widely supported.';
+                    break;
+                case 'ean13':
+                    title.textContent = 'EAN-13 - Product Barcode';
+                    description.textContent = 'EAN-13 is used for product identification worldwide. Requires exactly 13 digits and includes a built-in check digit for error detection.';
+                    break;
+                case 'qrcode':
+                    title.textContent = 'QR Code - 2D Matrix Code';
+                    description.textContent = 'QR codes can store much more data than traditional barcodes including URLs, text, contact info, and more. Supports error correction and can be read from any angle.';
+                    break;
+            }
+        }
+
+        function toggleSettings() {
+            const format = document.getElementById('formatSelect').value;
+            const barcodeSettings = document.querySelectorAll('.barcode-settings');
+            const qrSettings = document.getElementById('qrControls');
+            
+            if (format === 'qrcode') {
+                // Hide barcode-specific controls (width/height row)
+                document.querySelector('.row').style.display = 'none';
+                qrSettings.style.display = 'block';
+                qrSettings.classList.add('show');
+            } else {
+                // Show barcode-specific controls
+                document.querySelector('.row').style.display = 'flex';
+                qrSettings.style.display = 'none';
+                qrSettings.classList.remove('show');
+            }
+            
+            updateInputPlaceholder();
+        }
+
         // Initialize the page
         window.onload = function() {
             updateInputPlaceholder();
             toggleSettings();
+            updateFormatInfo('code128');
         };

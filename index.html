@@ -7,43 +7,96 @@
     <link rel="stylesheet" href="./src/style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>🔗 Barcode Generator</h1>
+     <div class="container">
+        <h1>🔗 Enhanced Barcode & QR Generator</h1>
+        
+        <div class="format-preview">
+            <div class="preview-card active" onclick="selectFormat('code128')">
+                <div class="preview-title">Code 128</div>
+                <div class="preview-desc">Universal ASCII</div>
+            </div>
+            <div class="preview-card" onclick="selectFormat('code39')">
+                <div class="preview-title">Code 39</div>
+                <div class="preview-desc">Simple A-Z, 0-9</div>
+            </div>
+            <div class="preview-card" onclick="selectFormat('ean13')">
+                <div class="preview-title">EAN-13</div>
+                <div class="preview-desc">Product Codes</div>
+            </div>
+            <div class="preview-card" onclick="selectFormat('qrcode')">
+                <div class="preview-title">QR Code</div>
+                <div class="preview-desc">2D Matrix</div>
+            </div>
+        </div>
         
         <div class="format-info">
-            <h3>Format Information</h3>
-            <p id="formatDescription">Select a barcode format to see its description and supported characters.</p>
+            <h3 id="formatTitle">Code 128 - Universal Barcode</h3>
+            <p id="formatDescription">Code 128 supports all ASCII characters (0-127) including letters, numbers, and symbols. Most versatile barcode format for general use.</p>
         </div>
         
         <div class="input-group">
-            <label for="formatSelect">Barcode Format:</label>
+            <label for="formatSelect">Code Format:</label>
             <select id="formatSelect" onchange="updateInputPlaceholder()">
                 <option value="code128">Code 128 - Most versatile, supports all ASCII</option>
                 <option value="code39">Code 39 - Simple, alphanumeric + symbols</option>
                 <option value="ean13">EAN-13 - Product barcodes, 13 digits</option>
+                <option value="qrcode">QR Code - 2D code, supports text, URLs, etc.</option>
             </select>
         </div>
         
         <div class="input-group">
             <label for="textInput">Text to Encode:</label>
-            <input type="text" id="textInput" placeholder="Enter text here..." oninput="generateBarcode()">
+            <input type="text" id="textInput" placeholder="Enter text here..." oninput="generateCode()">
         </div>
         
         <div class="row">
             <div class="input-group">
                 <label for="widthInput">Bar Width (px):</label>
-                <input type="number" id="widthInput" value="2" min="1" max="10" onchange="generateBarcode()">
+                <input type="number" id="widthInput" value="2" min="1" max="10" onchange="generateCode()">
             </div>
             <div class="input-group">
                 <label for="heightInput">Bar Height (px):</label>
-                <input type="number" id="heightInput" value="100" min="50" max="300" onchange="generateBarcode()">
+                <input type="number" id="heightInput" value="100" min="50" max="300" onchange="generateCode()">
             </div>
         </div>
         
-        <button onclick="generateBarcode()">Generate Barcode</button>
+        <div class="qr-controls" id="qrControls">
+            <div class="row">
+                <div class="input-group">
+                    <label for="qrSize">QR Code Size (px):</label>
+                    <input type="number" id="qrSize" value="250" min="100" max="500" onchange="generateCode()">
+                </div>
+                <div class="input-group">
+                    <label for="qrErrorCorrection">Error Correction:</label>
+                    <select id="qrErrorCorrection" onchange="generateCode()">
+                        <option value="L">Low (~7%)</option>
+                        <option value="M" selected>Medium (~15%)</option>
+                        <option value="Q">Quartile (~25%)</option>
+                        <option value="H">High (~30%)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <button onclick="generateCode()">🚀 Generate Code</button>
         
         <div id="barcodeContainer">
-            <p>Enter text above to generate a barcode</p>
+            <p>✨ Enter text above to generate your code</p>
+        </div>
+
+        <div class="stats" id="codeStats" style="display: none;">
+            <div class="stat-item">
+                <div class="stat-value" id="statWidth">-</div>
+                <div class="stat-label">Width (px)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="statHeight">-</div>
+                <div class="stat-label">Height (px)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="statChars">-</div>
+                <div class="stat-label">Characters</div>
+            </div>
         </div>
     </div>
 

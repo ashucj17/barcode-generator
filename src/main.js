@@ -1,5 +1,4 @@
-// Code 128 character patterns
-        const CODE128 = {
+const CODE128 = {
             ' ': [2,1,2,2,2,2], '!': [2,2,2,1,2,2], '"': [2,2,2,2,2,1], '#': [1,2,1,2,2,3],
             '$': [1,2,1,3,2,2], '%': [1,3,1,2,2,2], '&': [1,2,2,2,1,3], "'": [1,2,2,3,1,2],
             '(': [1,3,2,2,1,2], ')': [2,2,1,2,1,3], '*': [2,2,1,3,1,2], '+': [2,3,1,2,1,2],
@@ -26,7 +25,6 @@
             '|': [2,1,4,1,2,1], '}': [4,1,2,1,2,1], '~': [1,1,1,1,4,3]
         };
 
-        // Code 39 character patterns
         const CODE39 = {
             '0': [1,2,1,1,2,1,2,1,1], '1': [2,1,1,1,2,1,1,1,2], '2': [1,1,2,1,2,1,1,1,2],
             '3': [2,1,2,1,2,1,1,1,1], '4': [1,2,1,1,1,1,2,1,2], '5': [2,1,1,1,1,1,2,1,2],
@@ -45,7 +43,6 @@
             '.': [2,2,1,1,1,1,1,2,1], '/': [1,2,1,2,1,2,1,2,1], ':': [1,2,2,1,1,1,1,1,2]
         };
 
-        // EAN-13 patterns
         const EAN13_LEFT_ODD = [
             [3,2,1,1], [2,2,2,1], [2,1,2,2], [1,4,1,1], [1,1,3,2],
             [1,2,3,1], [1,1,1,4], [1,3,1,2], [1,2,1,3], [3,1,1,2]
@@ -67,7 +64,6 @@
             [0,1,0,1,1,0], [0,1,1,0,1,0]
         ];
 
-        // Start, center, and end patterns
         const START_B = [2,1,1,4,1,2];
         const STOP = [2,3,3,1,1,1,2];
         const CODE39_START_STOP = [1,2,1,1,1,2,1,2,1];
@@ -75,59 +71,207 @@
         const EAN13_CENTER = [1,1,1,1,1];
         const EAN13_END = [1,1,1];
 
-        function generateBarcode() {
+        function toggleSettings() {
+            const format = document.getElementById('formatSelect').value;
+            const barcodeSettings = document.querySelectorAll('.barcode-settings');
+            const qrSettings = document.querySelectorAll('.qr-settings');
+            
+            if (format === 'qrcode') {
+                barcodeSettings.forEach(el => el.style.display = 'none');
+                qrSettings.forEach(el => el.style.display = 'block');
+            } else {
+                barcodeSettings.forEach(el => el.style.display = 'block');
+                qrSettings.forEach(el => el.style.display = 'none');
+            }
+            
+            updateInputPlaceholder();
+        }
+
+        function updateInputPlaceholder() {
+            const format = document.getElementById('formatSelect').value;
+            const input = document.getElementById('textInput');
+            
+            switch(format) {
+                case 'code128':
+                    input.placeholder = 'Enter any text (letters, numbers, symbols)';
+                    break;
+                case 'code39':
+                    input.placeholder = 'Enter uppercase letters, numbers, and basic symbols';
+                    break;
+                case 'ean13':
+                    input.placeholder = 'Enter exactly 13 digits (e.g., 1234567890123)';
+                    break;
+                case 'qrcode':
+                    input.placeholder = 'Enter any text or URL';
+                    break;
+            }
+        }
+
+        function generateCode() {
             const text = document.getElementById('textInput').value;
-            const barWidth = parseInt(document.getElementById('widthInput').value);
-            const barHeight = parseInt(document.getElementById('heightInput').value);
             const format = document.getElementById('formatSelect').value;
             const container = document.getElementById('barcodeContainer');
 
             if (!text) {
-                container.innerHTML = '<p>Enter text above to generate a barcode</p>';
+                container.innerHTML = '<p>Enter text above to generate a code</p>';
                 return;
             }
 
             try {
-                let barcodeData;
-                switch(format) {
-                    case 'code128':
-                        barcodeData = encodeCode128B(text);
-                        break;
-                    case 'code39':
-                        barcodeData = encodeCode39(text);
-                        break;
-                    case 'ean13':
-                        barcodeData = encodeEAN13(text);
-                        break;
-                    default:
-                        throw new Error('Unsupported format');
+                if (format === 'qrcode') {
+                    generateQRCode(text, container);
+                } else {
+                    const barWidth = parseInt(document.getElementById('widthInput').value);
+                    const barHeight = parseInt(document.getElementById('heightInput').value);
+                    
+                    let barcodeData;
+                    switch(format) {
+                        case 'code128':
+                            barcodeData = encodeCode128B(text);
+                            break;
+                        case 'code39':
+                            barcodeData = encodeCode39(text);
+                            break;
+                        case 'ean13':
+                            barcodeData = encodeEAN13(text);
+                            break;
+                        default:
+                            throw new Error('Unsupported format');
+                    }
+                    
+                    const canvas = createBarcodeCanvas(barcodeData, barWidth, barHeight);
+                    
+                    container.innerHTML = '';
+                    container.appendChild(canvas);
+                    
+                    const textDiv = document.createElement('div');
+                    textDiv.className = 'barcode-text';
+                    textDiv.textContent = text;
+                    container.appendChild(textDiv);
+                    
+                    const formatDiv = document.createElement('div');
+                    formatDiv.className = 'barcode-text';
+                    formatDiv.style.fontSize = '12px';
+                    formatDiv.style.color = '#888';
+                    formatDiv.textContent = `Format: ${format.toUpperCase()}`;
+                    container.appendChild(formatDiv);
                 }
-                
-                const canvas = createBarcodeCanvas(barcodeData, barWidth, barHeight);
-                
-                container.innerHTML = '';
-                container.appendChild(canvas);
-                
-                const textDiv = document.createElement('div');
-                textDiv.className = 'barcode-text';
-                textDiv.textContent = text;
-                container.appendChild(textDiv);
-                
-                const formatDiv = document.createElement('div');
-                formatDiv.className = 'barcode-text';
-                formatDiv.style.fontSize = '12px';
-                formatDiv.style.color = '#888';
-                formatDiv.textContent = `Format: ${format.toUpperCase()}`;
-                container.appendChild(formatDiv);
                 
             } catch (error) {
                 container.innerHTML = `<p class="error">Error: ${error.message}</p>`;
             }
         }
 
+        function generateQRCode(text, container) {
+            const size = parseInt(document.getElementById('qrSize').value);
+            const errorCorrectionLevel = document.getElementById('qrErrorCorrection').value;
+            
+            const qrData = encodeQRCode(text, errorCorrectionLevel);
+            const canvas = createQRCanvas(qrData, size);
+            
+            container.innerHTML = '';
+            container.appendChild(canvas);
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'barcode-text';
+            textDiv.textContent = text;
+            container.appendChild(textDiv);
+            
+            const formatDiv = document.createElement('div');
+            formatDiv.className = 'barcode-text';
+            formatDiv.style.fontSize = '12px';
+            formatDiv.style.color = '#888';
+            formatDiv.textContent = `Format: QR CODE (${errorCorrectionLevel})`;
+            container.appendChild(formatDiv);
+        }
+
+        function encodeQRCode(text, errorLevel) {
+            const size = 21;
+            const qr = Array(size).fill().map(() => Array(size).fill(0));
+            
+            addFinderPattern(qr, 0, 0);
+            addFinderPattern(qr, size - 7, 0);
+            addFinderPattern(qr, 0, size - 7);
+            
+            for (let i = 8; i < size - 8; i++) {
+                qr[6][i] = (i % 2 === 0) ? 1 : 0;
+                qr[i][6] = (i % 2 === 0) ? 1 : 0;
+            }
+            
+            let dataIndex = 0;
+            for (let row = 1; row < size - 1; row++) {
+                for (let col = 1; col < size - 1; col++) {
+                    if (qr[row][col] === 0 && !isReservedArea(row, col, size)) {
+                        const charCode = text.charCodeAt(dataIndex % text.length);
+                        qr[row][col] = (charCode + row + col) % 2;
+                        dataIndex++;
+                    }
+                }
+            }
+            
+            return qr;
+        }
+
+        function addFinderPattern(qr, startRow, startCol) {
+            const pattern = [
+                [1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1],
+                [1,0,1,1,1,0,1],
+                [1,0,1,1,1,0,1],
+                [1,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1]
+            ];
+            
+            for (let i = 0; i < 7; i++) {
+                for (let j = 0; j < 7; j++) {
+                    if (startRow + i < qr.length && startCol + j < qr[0].length) {
+                        qr[startRow + i][startCol + j] = pattern[i][j];
+                    }
+                }
+            }
+        }
+
+        function isReservedArea(row, col, size) {
+            return (row < 9 && col < 9) ||
+                   (row < 9 && col >= size - 8) ||
+                   (row >= size - 8 && col < 9) ||
+                   (row === 6) || (col === 6);
+        }
+
+        function createQRCanvas(qrData, canvasSize) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvasSize;
+            canvas.height = canvasSize;
+            
+            const moduleSize = canvasSize / qrData.length;
+            
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvasSize, canvasSize);
+            
+            ctx.fillStyle = 'black';
+            
+            for (let row = 0; row < qrData.length; row++) {
+                for (let col = 0; col < qrData[row].length; col++) {
+                    if (qrData[row][col] === 1) {
+                        ctx.fillRect(
+                            col * moduleSize,
+                            row * moduleSize,
+                            moduleSize,
+                            moduleSize
+                        );
+                    }
+                }
+            }
+            
+            return canvas;
+        }
+
         function encodeCode128B(text) {
             const bars = [];
-            let checksum = 104; // Start B value
+            let checksum = 104;
             
             bars.push(...START_B);
             
@@ -239,30 +383,8 @@
             return canvas;
         }
 
-        function updateInputPlaceholder() {
-            const format = document.getElementById('formatSelect').value;
-            const input = document.getElementById('textInput');
-            const description = document.getElementById('formatDescription');
-            
-            switch(format) {
-                case 'code128':
-                    input.placeholder = 'Any ASCII characters';
-                    input.value = 'Hello123';
-                    description.textContent = 'Code 128 supports all ASCII characters (0-127) including letters, numbers, and symbols. Most versatile format.';
-                    break;
-                case 'code39':
-                    input.placeholder = 'A-Z, 0-9, and $%*+-./: space';
-                    input.value = 'HELLO123';
-                    description.textContent = 'Code 39 supports uppercase letters A-Z, digits 0-9, and symbols: $ % * + - . / : and space. Simple and widely supported.';
-                    break;
-                case 'ean13':
-                    input.placeholder = 'Exactly 13 digits';
-                    input.value = '1234567890123';
-                    description.textContent = 'EAN-13 is used for product identification. Requires exactly 13 digits. Commonly seen on retail products.';
-                    break;
-            }
-            generateBarcode();
-        }
-
-        // Initialize with default format
-        updateInputPlaceholder();
+        // Initialize the page
+        window.onload = function() {
+            updateInputPlaceholder();
+            toggleSettings();
+        };

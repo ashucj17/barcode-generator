@@ -71,27 +71,12 @@ const CODE128 = {
         const EAN13_CENTER = [1,1,1,1,1];
         const EAN13_END = [1,1,1];
 
-        function toggleSettings() {
-            const format = document.getElementById('formatSelect').value;
-            const barcodeSettings = document.querySelectorAll('.barcode-settings');
-            const qrSettings = document.querySelectorAll('.qr-settings');
-            
-            if (format === 'qrcode') {
-                barcodeSettings.forEach(el => el.style.display = 'none');
-                qrSettings.forEach(el => el.style.display = 'block');
-            } else {
-                barcodeSettings.forEach(el => el.style.display = 'block');
-                qrSettings.forEach(el => el.style.display = 'none');
-            }
-            
-            updateInputPlaceholder();
-        }
+        let currentFormat = 'code128';
 
         function updateInputPlaceholder() {
-            const format = document.getElementById('formatSelect').value;
             const input = document.getElementById('textInput');
             
-            switch(format) {
+            switch(currentFormat) {
                 case 'code128':
                     input.placeholder = 'Enter any text (letters, numbers, symbols)';
                     break;
@@ -109,7 +94,6 @@ const CODE128 = {
 
         function generateCode() {
             const text = document.getElementById('textInput').value;
-            const format = document.getElementById('formatSelect').value;
             const container = document.getElementById('barcodeContainer');
 
             if (!text) {
@@ -118,14 +102,14 @@ const CODE128 = {
             }
 
             try {
-                if (format === 'qrcode') {
+                if (currentFormat === 'qrcode') {
                     generateQRCode(text, container);
                 } else {
                     const barWidth = parseInt(document.getElementById('widthInput').value);
                     const barHeight = parseInt(document.getElementById('heightInput').value);
                     
                     let barcodeData;
-                    switch(format) {
+                    switch(currentFormat) {
                         case 'code128':
                             barcodeData = encodeCode128B(text);
                             break;
@@ -153,7 +137,7 @@ const CODE128 = {
                     formatDiv.className = 'barcode-text';
                     formatDiv.style.fontSize = '12px';
                     formatDiv.style.color = '#888';
-                    formatDiv.textContent = `Format: ${format.toUpperCase()}`;
+                    formatDiv.textContent = `Format: ${currentFormat.toUpperCase()}`;
                     container.appendChild(formatDiv);
                 }
                 
@@ -383,9 +367,9 @@ const CODE128 = {
             return canvas;
         }
 
-             function selectFormat(format) {
-            // Update the select dropdown
-            document.getElementById('formatSelect').value = format;
+        function selectFormat(format) {
+            // Update current format
+            currentFormat = format;
             
             // Update active preview card
             document.querySelectorAll('.preview-card').forEach(card => {
@@ -432,11 +416,10 @@ const CODE128 = {
         }
 
         function toggleSettings() {
-            const format = document.getElementById('formatSelect').value;
             const barcodeSettings = document.querySelectorAll('.barcode-settings');
             const qrSettings = document.getElementById('qrControls');
             
-            if (format === 'qrcode') {
+            if (currentFormat === 'qrcode') {
                 // Hide barcode-specific controls (width/height row)
                 document.querySelector('.row').style.display = 'none';
                 qrSettings.style.display = 'block';
